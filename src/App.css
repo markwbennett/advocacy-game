@@ -53,6 +53,20 @@
   margin-bottom: 2rem;
 }
 
+.welcome-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.scenario-count {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
 .btn-primary {
   background-color: #2c5aa0;
   color: white;
@@ -66,6 +80,21 @@
 
 .btn-primary:hover {
   background-color: #1e4070;
+}
+
+.btn-secondary {
+  background-color: #757575;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #616161;
 }
 
 .results-screen {

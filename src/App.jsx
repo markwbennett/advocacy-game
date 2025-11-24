@@ -1,13 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Scenario from './components/Scenario'
+import ScenarioBuilder from './components/ScenarioBuilder'
 import scenarios from './data/scenarios'
+
+const STORAGE_KEY = 'advocacy-game-custom-scenarios'
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false)
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0)
   const [results, setResults] = useState([])
   const [gameComplete, setGameComplete] = useState(false)
+  const [showBuilder, setShowBuilder] = useState(false)
+  const [customScenarios, setCustomScenarios] = useState([])
+
+  // Load custom scenarios from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        setCustomScenarios(parsed)
+      } catch (e) {
+        console.error('Failed to parse custom scenarios:', e)
+      }
+    }
+  }, [])
+
+  // Combine built-in and custom scenarios
+  const allScenarios = [...scenarios, ...customScenarios]
 
   const handleStart = () => {
     setGameStarted(true)
@@ -18,22 +39,48 @@ function App() {
 
   const handleScenarioComplete = (wasCorrect) => {
     const newResults = [...results, {
-      scenarioId: scenarios[currentScenarioIndex].id,
+      scenarioId: allScenarios[currentScenarioIndex].id,
       correct: wasCorrect
     }]
     setResults(newResults)
 
-    if (currentScenarioIndex < scenarios.length - 1) {
+    if (currentScenarioIndex < allScenarios.length - 1) {
       setCurrentScenarioIndex(currentScenarioIndex + 1)
     } else {
       setGameComplete(true)
     }
   }
 
+  const handleSaveScenario = (scenario) => {
+    const updated = [...customScenarios, scenario]
+    setCustomScenarios(updated)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+    setShowBuilder(false)
+    alert('Scenario saved successfully!')
+  }
+
   const calculateScore = () => {
     const correct = results.filter(r => r.correct).length
     const total = results.length
     return { correct, total, percentage: Math.round((correct / total) * 100) }
+  }
+
+  if (showBuilder) {
+    return (
+      <div className="app">
+        <header className="app-header">
+          <h1>Texas Criminal Trial Advocacy</h1>
+          <p>Scenario Builder</p>
+        </header>
+
+        <main className="app-main">
+          <ScenarioBuilder
+            onClose={() => setShowBuilder(false)}
+            onSave={handleSaveScenario}
+          />
+        </main>
+      </div>
+    )
   }
 
   if (!gameStarted) {
@@ -55,9 +102,19 @@ function App() {
               Each scenario presents a critical moment in trial. You must decide how to
               respond - quickly and correctly. The clock is ticking.
             </p>
-            <button className="btn-primary" onClick={handleStart}>
-              Start Practice
-            </button>
+            <div className="welcome-actions">
+              <button className="btn-primary" onClick={handleStart}>
+                Start Practice
+              </button>
+              <button className="btn-secondary" onClick={() => setShowBuilder(true)}>
+                Create Scenario
+              </button>
+            </div>
+            {customScenarios.length > 0 && (
+              <p className="scenario-count">
+                {allScenarios.length} total scenarios ({customScenarios.length} custom)
+              </p>
+            )}
           </div>
         </main>
       </div>
@@ -111,12 +168,12 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>Texas Criminal Trial Advocacy</h1>
-        <p>Scenario {currentScenarioIndex + 1} of {scenarios.length}</p>
+        <p>Scenario {currentScenarioIndex + 1} of {allScenarios.length}</p>
       </header>
 
       <main className="app-main">
         <Scenario
-          scenario={scenarios[currentScenarioIndex]}
+          scenario={allScenarios[currentScenarioIndex]}
           onComplete={handleScenarioComplete}
         />
       </main>
