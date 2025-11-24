@@ -7,6 +7,14 @@ function Scenario({ scenario, onComplete }) {
   const [showResult, setShowResult] = useState(false)
   const [timerActive, setTimerActive] = useState(true)
 
+  // Reset state when scenario changes
+  useEffect(() => {
+    setTimeRemaining(scenario.timerSeconds)
+    setSelectedOption(null)
+    setShowResult(false)
+    setTimerActive(true)
+  }, [scenario])
+
   useEffect(() => {
     if (!timerActive || timeRemaining <= 0) return
 
